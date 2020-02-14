@@ -649,3 +649,61 @@ addUser(
   * 错误提示
 
     ![image-20200214114312431](README.assets/image-20200214114312431.png)
+
+## 八、使用拦截器对返回数据的转换
+
+* 1、之前原始的返回
+
+  ![image-20200214114652111](README.assets/image-20200214114652111.png)
+
+* 2、[拦截器官网地址](https://docs.nestjs.com/interceptors)
+
+* 3、创建一个拦截器
+
+  ```shell
+  nest g in interfaces/transform/transform
+  ```
+
+* 4、拦截器的代码
+
+  ```typescript
+  import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+  import { Observable } from 'rxjs';
+  import { map } from 'rxjs/operators';
+  import { classToPlain } from 'class-transformer';
+  
+  @Injectable()
+  export class TransformInterceptor implements NestInterceptor {
+    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+      return next.handle().pipe(
+        map((data: any) => {
+          return {
+            result: data,
+            code: 0,
+            message: '请求成功',
+          };
+        }),
+      );
+    }
+  }
+  ```
+
+* 5、使用拦截器
+
+  ```typescript
+  providers: [
+    ...
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor
+    }
+  ],
+  ```
+
+* 6、测试效果
+
+  ![image-20200214115312839](README.assets/image-20200214115312839.png)
+
+## 九、实体类的钩子函数的使用及排除字段
+
+* 1、

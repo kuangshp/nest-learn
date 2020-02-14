@@ -6,9 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './controllers/admin/admin.module';
 import { FrontModule } from './controllers/front/front.module';
 import { ApiModule } from './controllers/api/api.module';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpErrorFilter } from './filters/http-error.filter';
 import { ValidationPipe } from './pipe/validation.pipe';
+import { TransformInterceptor } from './interfaces/transform/transform.interceptor';
 
 
 @Module({
@@ -44,6 +45,10 @@ import { ValidationPipe } from './pipe/validation.pipe';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor
     }
   ],
 })

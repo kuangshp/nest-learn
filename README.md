@@ -332,3 +332,62 @@
 
 * 15、使用`postman`测试数据
 
+## 四、配置静态资源
+
+* 1、直接在`main.ts`中配置
+
+  ```typescript
+  import { NestFactory } from '@nestjs/core';
+  import { Logger } from '@nestjs/common';
+  import { NestExpressApplication } from '@nestjs/platform-express';
+  
+  import { AppModule } from './app.module';
+  import { ValidationPipe } from './pipe/validation.pipe';
+  import adminConfig from './config/admin.config';
+  
+  const PORT = process.env.PORT || 8080;
+  
+  async function bootstrap() {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    //配置静态资源目录
+    app.useStaticAssets(path.join(__dirname, '..', 'public'), {
+      prefix: adminConfig.staticPrefixPath,
+    });
+  
+    //配置模板引擎及模板的目录
+    app.setBaseViewsDir('views');
+    app.setViewEngine('ejs');
+    ...
+  }
+  ```
+
+* 2、创建`ejs`模板
+
+* 3、使用`ejs`模板
+
+  ```typescript
+  <body>
+    <h1>用户页面</h1>
+    <%for(var i=0;i<user.length;i++){ %>
+    <li><%=user[i].username%></li>
+    <%}%>
+  </body>
+  ```
+
+* 4、渲染模板
+
+  ```typescript
+  @Get('user')
+    @Render('user')
+    async user() {
+      const user = await this.appService.userList();
+      return {
+        user,
+      }
+    }
+  ```
+
+* 5、<font color="#f00">注意点</font>
+
+  * 如果使用了`@Response() res: any`就不要使用`return`
+

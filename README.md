@@ -154,6 +154,54 @@
   }
   ```
 
+* 4、配置跨域访问
+
+  ```typescript
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true, // 设置跨站访问
+    logger: false,
+  });
+  ```
+
+* 5、访问频率的限制
+
+  * [官网地址](https://docs.nestjs.com/techniques/security#rate-limiting)
+
+  * 安装包
+
+    ```typescript
+    npm install express-rate-limit
+    ```
+
+  * 在`main.ts`中使用
+
+    ```typescript
+    // 访问频率限制
+    app.use(
+      rateLimit({
+        windowMs: 15 * 60 * 1000, // 15分钟
+        max: 100, // 限制15分钟内最多只能访问100次
+      }),
+    );
+    ```
+
+* 6、`web`漏洞的配置
+
+  * [官网地址](https://docs.nestjs.com/techniques/security#helmet)
+
+  * 安装包
+
+    ```typescript
+    npm install helmet
+    ```
+
+  * 使用
+
+    ```typescript
+    // Web漏洞的
+    app.use(helmet());
+    ```
+
 ## 三、配置`mysql`
 
 * 1、[官网地址](https://docs.nestjs.com/recipes/sql-typeorm)
@@ -1081,3 +1129,79 @@ addUser(
   ![image-20200214132625274](README.assets/image-20200214132625274.png)
 
 * 7、加上请求头
+
+## 十一、`swagger`文档的使用
+
+* 1、[官网地址](https://docs.nestjs.com/recipes/swagger)
+
+* 2、安装包
+
+  ```typescript
+  npm install --save @nestjs/swagger swagger-ui-express
+  ```
+
+* 3、`main.ts`文件的配置
+
+  ```typescript
+  // 配置api文档信息
+  const options = new DocumentBuilder()
+  .setTitle('nestjs api文档')
+  .setDescription('nestjs api接口文档')
+  .setBasePath(PREFIX)
+  .addBearerAuth({ type: 'apiKey', in: 'header', name: 'token' })
+  .setVersion('0.0.1')
+  .build();
+  
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup(`${PREFIX}/docs`, app, document);
+  ```
+
+* 4、在在控制器中配置
+
+  ```typescript
+  @ApiTags('用户登录')
+  @Controller('login')
+  export class LoginController {
+    constructor (
+      private readonly userService: UserService
+    ) { }
+  
+    @ApiOperation({
+      summary: '用户登录',
+      description: '用户名可以是手机号码、邮箱、用户名',
+    })
+    @ApiCreatedResponse({
+      type: LoginDto,
+      description: '用户登录DTO'
+    })
+    @ApiOkResponse({ type: UserRep })
+    @Post()
+    @HttpCode(HttpStatus.OK)
+    async login(@Body() body: LoginDto): Promise<any> {
+      return await this.userService.login(body);
+    }
+  }
+  ```
+
+* 5、在`dto`上配置
+
+  ```typescript
+  import { IsString, IsNotEmpty } from 'class-validator';
+  import { ApiProperty } from '@nestjs/swagger';
+  
+  export class LoginDto {
+    @ApiProperty({ required: true, description: '用户名' })
+    @IsString({ message: '用户名必须为字符类型' })
+    @IsNotEmpty({ message: '姓名不能为空' })
+    readonly username: string;
+  
+    @ApiProperty({ required: true, description: '密码' })
+    @IsString({ message: '密码必须为字符串类型' })
+    @IsNotEmpty({ message: '密码不能为空' })
+    readonly password: string;
+  }
+  ```
+
+* 6、预览效果
+
+  ![image-20200214141231200](README.assets/image-20200214141231200.png)

@@ -4,7 +4,10 @@ import adminConfig from '@src/config/admin.config';
 import { UserService } from '@src/service/user/user.service';
 import { UserCreateDto } from './dto/user.create.dto';
 import { UserRep } from './dto/user.rep.dto';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 
+@ApiTags('用户模块')
+@ApiBearerAuth()
 @Controller(`${adminConfig.adminPath}/user`)
 export class UserController {
   constructor (
@@ -20,7 +23,10 @@ export class UserController {
    * @param {type} 
    * @return: 
    */
+  @ApiOperation({ summary: '用户列表', description: '获取用户列表' })
+  @ApiOkResponse({ type: [UserRep] })
   @Get()
+  @HttpCode(HttpStatus.OK)
   async userList(@Query() querOption: { [propsName: string]: any }): Promise<UserRep> {
     const { data, ...opts } = await this.userService.findPage(querOption);
     return {
@@ -41,6 +47,12 @@ export class UserController {
    * @param {type} 
    * @return: 
    */
+  @ApiOperation({ summary: '创建用户', description: '输入用户名及密码' })
+  @ApiCreatedResponse({
+    type: UserCreateDto,
+    description: '创建用户DTO'
+  })
+  @ApiOkResponse({ type: UserRep })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() body: UserCreateDto): Promise<UserRep> {

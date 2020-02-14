@@ -1,6 +1,9 @@
 import { Controller, Get, Body, Post } from '@nestjs/common';
+
 import adminConfig from '@src/config/admin.config';
 import { UserService } from '@src/service/user/user.service';
+import { UserCreateDto } from './dto/user.create.dto';
+import { UserRep } from './dto/user.rep.dto';
 
 @Controller(`${adminConfig.adminPath}/user`)
 export class UserController {
@@ -31,7 +34,7 @@ export class UserController {
    * @return: 
    */
   @Post()
-  async createUser(@Body() body: any): Promise<any> {
+  async createUser(@Body() body: UserCreateDto): Promise<UserRep> {
     return await this.userService.createUser(body);
   }
 }

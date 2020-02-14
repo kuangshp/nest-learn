@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './controllers/admin/admin.module';
 import { FrontModule } from './controllers/front/front.module';
 import { ApiModule } from './controllers/api/api.module';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpErrorFilter } from './filters/http-error.filter';
 
 
 @Module({
@@ -33,6 +35,11 @@ import { ApiModule } from './controllers/api/api.module';
     ApiModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpErrorFilter
+    }
+  ],
 })
 export class AppModule { }

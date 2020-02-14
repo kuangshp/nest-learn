@@ -479,4 +479,97 @@ addUser(
 * 1、创建各个文件夹
 * 2、测试服务器请求
 
-## 七、
+## 七、对客户端传递的数据进行校验并且拦截错误返回到前端
+
+* 1、[官网地址](https://docs.nestjs.com/pipes#class-validator)
+
+* 2、安装包
+
+  ```shell
+  npm i --save class-validator class-transformer
+  ```
+
+* 3、书写`dto`的文件
+
+* 4、测试
+
+  ![image-20200214112358112](README.assets/image-20200214112358112.png)
+
+  ![image-20200214112340606](README.assets/image-20200214112340606.png)
+
+* 5、拦截错误
+
+  * 创建过滤器
+
+    ```shell
+    nest g f filters/HttpError
+    ```
+
+  * 关于过滤器的文件代码
+
+    ```typescript
+    import { ArgumentsHost, Catch, ExceptionFilter, Logger, HttpException, HttpStatus } from '@nestjs/common';
+    import { formatDate } from '@src/utils';
+    
+    @Catch()
+    export class HttpErrorFilter implements ExceptionFilter {
+      catch(exception: HttpException, host: ArgumentsHost) {
+        const ctx = host.switchToHttp();
+        const response = ctx.getResponse();
+        const request = ctx.getRequest();
+        const status =
+          exception instanceof HttpException
+            ? exception.getStatus()
+            : HttpStatus.INTERNAL_SERVER_ERROR;
+    
+        const message =
+          exception.message ||
+          exception.message.message ||
+          exception.message.error ||
+          null;
+        Logger.log(message, '错误提示');
+        const errorResponse = {
+          status,
+          result: {
+            error: message, // 获取全部的错误信息
+          },
+          message: (typeof message == 'string') ? (message || '请求失败') : JSON.stringify(message),
+          code: 1, // 自定义code
+          path: request.url, // 错误的url地址
+          method: request.method, // 请求方式
+          timestamp: new Date().toLocaleDateString(), // 错误的时间
+        };
+        // 打印日志
+        Logger.error(
+          `【${formatDate(Date.now())}】${request.method} ${request.url}`,
+          JSON.stringify(errorResponse),
+          'HttpExceptionFilter',
+        );
+        // 设置返回的状态码、请求头、发送错误信息
+        response.status(status);
+        response.header('Content-Type', 'application/json; charset=utf-8');
+        response.send(errorResponse);
+      }
+    }
+    ```
+
+    
+
+  * 在`app.module.ts`找中使用
+
+    ```typescript
+    ...
+    providers: [
+      {
+        provide: APP_FILTER,
+        useClass: HttpErrorFilter
+      }
+    ],
+    ...
+    ```
+
+  * 测试错误提示
+
+    ![image-20200214113522873](README.assets/image-20200214113522873.png)
+
+## 八、

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { BaseService } from '../base/base.service';
+import { UserCreateDto } from '@src/controllers/admin/user/dto/user.create.dto';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -14,7 +15,7 @@ export class UserService extends BaseService {
     super(userRepository);
   }
 
-  async createUser(data: any): Promise<any> {
+  async createUser(data: UserCreateDto): Promise<any> {
     const user = await this.userRepository.create(data);
     return await this.userRepository.save(user);
   }

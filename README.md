@@ -391,3 +391,92 @@
 
   * 如果使用了`@Response() res: any`就不要使用`return`
 
+## 五、服务器端接收客户端的数据
+
+* 1、常见的装饰器[官网地址](https://docs.nestjs.com/custom-decorators)
+
+| No.  | 名字                    | 字段说明(参考`express`框架字段)                         |
+| :--: | ----------------------- | ------------------------------------------------------- |
+|  1   | @Request()              | req 获取到req请求的参数                                 |
+|  2   | @Response()             | res 使用了res就不使用使用return返回值需要使用res.send() |
+|  3   | @Next()                 | next                                                    |
+|  4   | @Session()              | req.session                                             |
+|  5   | @Param(key?: string)    | req.params / req.params[key] 获取动态路由的参数         |
+|  6   | @Body(key?: string)     | req.body / req.body[key] 获取post请求提交的参数         |
+|  7   | @Query(key?: string)    | req.query / req.query[key] 获取get请求query的参数       |
+|  8   | @Headers(name?: string) | req.headers / req.headers[name] 获取请求头的参数        |
+
+* 2、关于`@Query()`获取全部的参数
+
+```typescript
+@Controller('user')
+export class UserController {
+  @Get()
+  index(@Query() query) {
+    console.log(query); // 输出结果:{ name: 'hello', age: '20' }
+    return "你好";
+  }
+}
+// 浏览器访问的url地址:http://localhost:4000/user?name=hello&age=2
+```
+
+* 3、在`Query()`中带参数并且判断参数类型
+
+```typescript
+@Controller('user')
+export class UserController {
+  @Get()
+  index(
+  @Query('age', new ParseIntPipe()) age: number,
+   @Query('name') name: string
+  ) {
+    console.log(age, name);
+    return "你好";
+  }
+}
+// 浏览器访问的url地址:http://localhost:4000/user?name=hello&age=20
+```
+
+* 4、`@Param`参数的获取
+
+```typescript
+@Get(":id")
+userArticle(@Param() params) {
+  console.log(params); // 输出{ id: '2' }
+  return "用户详情"
+}
+// 浏览器访问的url地址:http://localhost:4000/user/2
+```
+
+* 5、`@Param`单独接受参数
+
+```typescript
+@Get(":id")
+userArticle(@Param('id', new ParseIntPipe()) id: number) {
+  console.log(id);
+  return "用户详情"
+}
+// 浏览器访问的url地址:http://localhost:4000/user/2
+```
+
+* 6、`@Body()`接受`post`提交过来的数据(一次性接收全部的,也可以在`@Body()`中加参数类似上面的方式一样的校验传递过来的参数[仅仅是针对参数比较少的情况下])
+
+```typescript
+@Post()
+addUser(
+  @Body() body
+) {
+  console.log(body);
+  return body
+}
+// 使用postman提交post请求地址:http://localhost:4000/user/
+```
+
+
+
+## 六、改正项目目录
+
+* 1、创建各个文件夹
+* 2、测试服务器请求
+
+## 七、

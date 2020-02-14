@@ -3,10 +3,10 @@ import * as path from 'path';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from 'nestjs-config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminModule } from './controllers/admin/admin.module';
+import { FrontModule } from './controllers/front/front.module';
+import { ApiModule } from './controllers/api/api.module';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UserEntity } from './entities/user.entity';
 
 @Module({
   imports: [
@@ -28,11 +28,11 @@ import { UserEntity } from './entities/user.entity';
       inject: [ConfigService],
     }),
     ConfigModule,
-    TypeOrmModule.forFeature([
-      UserEntity,
-    ])
+    AdminModule,
+    FrontModule,
+    ApiModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule { }

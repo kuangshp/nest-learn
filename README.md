@@ -1205,3 +1205,50 @@ addUser(
 * 6、预览效果
 
   ![image-20200214141231200](README.assets/image-20200214141231200.png)
+
+## 十二、打包上线
+
+* 1、直接运行命令打包
+
+  ```typescript
+  npm run build
+  ```
+
+* 2、直接跑服务
+
+  ```typescript
+  npm run start:prod
+  ```
+
+  ![image-20200214143146989](README.assets/image-20200214143146989.png)
+
+* 3、不幸的直接报错了
+
+* 4、处理这个错误的方式
+
+  * 安装包
+
+    ```typescript
+    npm install cross-env
+    ```
+
+  * 修改启动的脚本
+
+    ```json
+    "start:dev": "cross-env NODE_ENV=development nodemon",
+    "start:prod": "cross-env NODE_ENV=production node dist/main.js",
+    ```
+
+  * 修改`app.module.ts`文件
+
+    ```typescript
+    const entitiesPath =
+      process.env.NODE_ENV === 'production'
+        ? path.resolve('./**/*.entity.js')
+        : path.resolve('./**/*.entity.ts');
+    Logger.log(process.env.NODE_ENV, '当前环境');
+    ```
+
+    ![image-20200214143645465](README.assets/image-20200214143645465.png)
+
+* 5、使用`pm2`部署项目

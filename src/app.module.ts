@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from 'nestjs-config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './controllers/admin/admin.module';
@@ -12,6 +12,12 @@ import { ValidationPipe } from './pipe/validation.pipe';
 import { TransformInterceptor } from './interfaces/transform/transform.interceptor';
 import { AuthGuard } from './guard/auth.guard';
 
+
+const entitiesPath =
+  process.env.NODE_ENV === 'production'
+    ? path.resolve('./**/*.entity.js')
+    : path.resolve('./**/*.entity.ts');
+Logger.log(process.env.NODE_ENV, '当前环境');
 
 @Module({
   imports: [
@@ -26,7 +32,7 @@ import { AuthGuard } from './guard/auth.guard';
         username: config.get('database.username'),
         password: config.get('database.password'),
         database: config.get('database.database'),
-        entities: ['./**/*.entity.ts', './**/*.entity.js'],
+        entities: [entitiesPath],
         synchronize: config.get('database.synchronize'),
         logging: config.get('database.logging'),
       }),

@@ -49,7 +49,7 @@ import { TransformInterceptor } from './interfaces/transform/transform.intercept
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor
-    }
+    },
   ],
 })
 export class AppModule { }

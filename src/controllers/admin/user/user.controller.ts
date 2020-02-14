@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Post } from '@nestjs/common';
+import { Controller, Get, Body, Post, HttpCode, HttpStatus } from '@nestjs/common';
 
 import adminConfig from '@src/config/admin.config';
 import { UserService } from '@src/service/user/user.service';
@@ -34,7 +34,9 @@ export class UserController {
    * @return: 
    */
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() body: UserCreateDto): Promise<UserRep> {
-    return await this.userService.createUser(body);
+    const user = await this.userService.createUser(body);
+    return user.toResponseObject(false);
   }
 }

@@ -60,6 +60,103 @@
 
 * 4、直接启动项目
 
+* 5、我们今天要实现的功能
+
+* ![image-20200214090051371](README.assets/image-20200214090051371.png)![](README.assets/image-20200214090138472.png)
+
 ## 二、对项目的基本配置
 
-* 1、
+* 1、**使用`.env`文件存放敏感信息或者配置信息**
+
+  * 安装依赖包
+
+    ```shell
+    npm install dotenv
+    npm install @types/dotenv -D
+    ```
+
+  * 项目下创建.env的文件
+
+  * 在`main.ts`中使用
+
+    ```typescript
+    import 'dotenv/config';
+    import { NestFactory } from '@nestjs/core';
+    import { Logger } from '@nestjs/common';
+    
+    import { AppModule } from './app.module';
+    
+    const PORT = process.env.PORT || 8080;
+    const PREFIX = process.env.PREFIX || '/';
+    
+    async function bootstrap() {
+      const app = await NestFactory.create(AppModule);
+    
+      // 给请求添加prefix
+      app.setGlobalPrefix(PREFIX);
+      await app.listen(PORT, () => {
+        Logger.log(`服务已经启动,请访问:http://wwww.localhost:${PORT}/${PREFIX}`);
+      });
+    }
+    bootstrap().catch(e => Logger.error(e));
+    ```
+
+* 2、使用`nest-config` 配置
+
+  * 安装依赖包
+
+    ```shell
+    npm install nestjs-config
+    ```
+
+  * 项目根目录下创建一个`config`的目录
+
+  * 直接在`app.module.ts`中引入配置
+
+    ```shell
+    import * as path from 'path';
+    
+    import { Module } from '@nestjs/common';
+    import { ConfigModule } from 'nestjs-config';
+    
+    import { AppController } from './app.controller';
+    import { AppService } from './app.service';
+    
+    @Module({
+      imports: [
+        ConfigModule.load(path.resolve(__dirname, 'config', '**/!(*.d).{ts,js}'), {
+          modifyConfigName: (name: string) => name.replace('.config', ''),
+        }), // 配置加载配置文件
+        ConfigModule,
+      ],
+      controllers: [AppController],
+      providers: [AppService],
+    })
+    export class AppModule { }
+    ```
+
+## 三、配置`mysql`
+
+* 1、[官网地址](https://docs.nestjs.com/recipes/sql-typeorm)
+
+* 2、安装的依赖包
+
+  ```shell
+  npm install --save @nestjs/typeorm typeorm mysql
+  ```
+
+* 3、在`.env`文件中配置数据库的基本配置
+
+  ```shell
+  // mysql数据库配置
+  DB_TYPE = mysql
+  DB_HOST = localhost
+  DB_USERNAME = root
+  DB_PASSWORD = root
+  DB_DATABASE = test
+  DB_PORT = 3306
+  DB_SYNCHRONIZE = false
+  DB_LOGGING = true
+  ```
+
+* 4、在

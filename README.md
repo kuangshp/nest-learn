@@ -572,4 +572,80 @@ addUser(
 
     ![image-20200214113522873](README.assets/image-20200214113522873.png)
 
-## 八、
+* 6、使用管道对返回的错误处理
+
+  * 使用命令创建管道
+
+    ```shell
+    nest g pi pipe/validation 
+    ```
+
+  * 在管道的代码
+
+    ```typescript
+    import {
+      ArgumentMetadata,
+      Injectable,
+      PipeTransform,
+      Logger,
+      HttpException,
+      HttpStatus,
+    } from '@nestjs/common';
+    import { validate } from 'class-validator';
+    import { plainToClass } from 'class-transformer';
+    import * as _ from 'lodash';
+    
+    @Injectable()
+    export class ValidationPipe implements PipeTransform<any> {
+      async transform(value: any, metadata: ArgumentMetadata) {
+        const { metatype } = metadata;
+        if (!metatype || !this.toValidate(metatype)) {
+          return value;
+        }
+        const object = plainToClass(metatype, value);
+        const errors = await validate(object);
+        Logger.log(errors);
+        if (errors.length > 0) {
+          // 遍历全部的错误信息,返回给前端
+          const errorMessage = errors.map(item => {
+            return {
+              currentValue: item.value === undefined ? '' : item.value,
+              [item.property]: _.values(item.constraints)[0],
+            };
+          });
+          // 统一抛出异常
+          throw new HttpException(
+            { message: errorMessage },
+            HttpStatus.OK,
+          );
+        }
+        return value;
+      }
+    
+      private toValidate(metatype: any): boolean {
+        const types = [String, Boolean, Number, Array, Object];
+        return !types.includes(metatype);
+      }
+    }
+    ```
+
+  * 使用管道
+
+    ```typescript
+    providers: [
+      {
+        provide: APP_FILTER,
+        useClass: HttpErrorFilter
+      },
+      {
+        provide: APP_PIPE,
+        useClass: ValidationPipe
+      }
+    ],
+    ```
+
+    
+
+  * 错误提示
+
+    ![image-20200214114312431](README.assets/image-20200214114312431.png)

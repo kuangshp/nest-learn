@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Body, Post, HttpCode, HttpStatus, Query } from '@nestjs/common';
 
 import adminConfig from '@src/config/admin.config';
 import { UserService } from '@src/service/user/user.service';
@@ -21,8 +21,16 @@ export class UserController {
    * @return: 
    */
   @Get()
-  async userList(): Promise<any> {
-    return await this.userService.findPage();
+  async userList(@Query() querOption: { [propsName: string]: any }): Promise<UserRep> {
+    const { data, ...opts } = await this.userService.findPage(querOption);
+    return {
+      data: data.map(item => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // const { token, password, nodeAuth, ...opts } = item;
+        return item.toResponseObject(false);
+      }),
+      ...opts
+    }
   }
 
   /**

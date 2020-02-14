@@ -1,6 +1,7 @@
+const PREFIX = process.env.PREFIX || '/';
 export default {
   adminPath: 'admin',
-  sessionMaxAge: 30 * 1000 * 60,
+  whiteUrl: [`${PREFIX}/login/`, `${PREFIX}/register/`], // 白名单url
   staticPrefixPath: '', // 静态文件的前缀
   supportImgTypes: ['.png', '.jpg', '.gif', '.jpeg'],
   // 使用jimp处理图片的参数

@@ -58,9 +58,17 @@
   ➜  nest-learn git:(master) ✗ 
   ```
 
-* 4、直接启动项目
+* 4、一般使用命令创建组件、服务、守卫、管道
 
-* 5、我们今天要实现的功能
+  ```typescript
+  nest g gu guard/auth [--no-spec]
+  ```
+
+  
+
+* 5、直接启动项目
+
+* 6、我们今天要实现的功能
 
 * ![image-20200214090051371](README.assets/image-20200214090051371.png)![](README.assets/image-20200214090138472.png)
 
@@ -953,3 +961,123 @@ addUser(
     ![image-20200214130605171](README.assets/image-20200214130605171.png)
 
     ![image-20200214130621126](README.assets/image-20200214130621126.png)
+
+## 十、守卫的使用
+
+* 1、[官网地址](https://docs.nestjs.com/guards)
+
+* 2、我们这就不使用官网的案例，直接使用`jwt`方式进行守卫
+
+* 3、创建一个守卫
+
+  ```typescript
+  nest g gu guard/auth --no-spec
+  ```
+
+* 4、守卫的代码
+
+  ```typescript
+  import {
+    Injectable,
+    CanActivate,
+    Logger,
+    HttpException,
+    HttpStatus,
+    ExecutionContext,
+  } from '@nestjs/common';
+  import * as jwt from 'jsonwebtoken';
+  import { InjectConfig, ConfigService } from 'nestjs-config';
+  import { getUrlQuery } from '@src/utils';
+  
+  
+  @Injectable()
+  export class AuthGuard implements CanActivate {
+    constructor (
+      @InjectConfig() private readonly configService: ConfigService,
+    ) { }
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+      const request = context.switchToHttp().getRequest();
+      const token =
+        context.switchToRpc().getData().headers.token ||
+        context.switchToHttp().getRequest().body.token ||
+        getUrlQuery(request.url, 'token');
+      Logger.log(`当前的token: ${token}`, 'AuthGuard');
+      // 如果白名单里面有的url或者是前端的就不拦截
+      if (this.hasUrl(this.configService.get('admin.whiteUrl'), request.url) || request.url.startsWith('/api/v1/front')) {
+        return true;
+      }
+      if (token) {
+        try {
+          const user = await this.verifyToken(token, process.env.SECRET);
+          request.user = user;
+          return true;
+        } catch (e) {
+          throw new HttpException('没有授权不能访问,请先登录', HttpStatus.UNAUTHORIZED);
+        }
+      } else {
+        throw new HttpException('没有授权不能访问,请先登录', HttpStatus.UNAUTHORIZED);
+      }
+    }
+  
+    /**
+     * @param {token}: token
+     * @param {secret}: secret
+     * @return:
+     * @Description: 校验用户传递过来的token
+     * @Author: 水痕
+     * @LastEditors: 水痕
+     * @Date: 2019-07-31 12:56:01
+     */
+    private verifyToken(token: string, secret: string): Promise<any> {
+      return new Promise((resolve, reject) => {
+        jwt.verify(token, secret, (error, payload) => {
+          if (error) {
+            console.log('-----------error start--------------');
+            console.log(error);
+            console.log('-----------error end--------------');
+            reject(error);
+          } else {
+            resolve(payload);
+          }
+        });
+      });
+    }
+  
+    /**
+     * @param {string[]} urlList url列表
+     * @param {url} url 当前要判断的url列表
+     * @return:
+     * @Description: 判断一个url列表中是否包含一个url
+     * @Author: 水痕
+     * @LastEditors: 水痕
+     * @Date: 2019-08-07 14:28:11
+     */
+    private hasUrl(urlList: string[], url: string): boolean {
+      let flag = false;
+      for (const item of urlList) {
+        if (Object.is(item.replace(/\//gi, ''), url.replace(/\//gi, ''))) {
+          flag = true;
+        }
+      }
+      return flag;
+    }
+  }
+  ```
+
+* 5、在`app.module.ts`配置守卫
+
+  ```typescript
+  providers: [
+    ...
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
+  ```
+
+* 6、测试获取用户数据
+
+  ![image-20200214132625274](README.assets/image-20200214132625274.png)
+
+* 7、加上请求头
